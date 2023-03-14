@@ -169,5 +169,55 @@ def delete_condition(condition_id):
     return jsonify({'message': 'Condition has been deleted successfully!'})
 
 
+@app.route('/actions/devices/<int:device_id>', methods=['GET', 'POST'])
+def actions(device_id):
+    device = Devices.query.get_or_404(device_id)
+    if request.method == 'POST':
+        json_data = request.get_json()
+        name = json_data['name']
+        action = Actions(name=name, device=device)
+        db.session.add(action)
+        db.session.commit()
+
+    actions = Actions.query.filter_by(device_id=device_id)
+    return_values = []
+    for action in actions:
+        return_values.append({
+            'id': action.id,
+            'name': action.name,
+            'device_id': action.device_id
+        })
+    return jsonify(return_values)
+
+
+@app.route('/actions/<int:action_id>', methods=['GET', 'PATCH'])
+def get_action(action_id):
+    action = Actions.query.get_or_404(action_id)
+    if request.method == 'PATCH':
+        json_data = request.get_json()
+        name = json_data['name']
+        device_id = int(json_data['device_id'])
+        device = Devices.query.get_or_404(device_id)
+        action.name = name
+        action.device = device
+
+        db.session.add(action)
+        db.session.commit()
+
+    return jsonify({
+        'id': action.id,
+        'name': action.name,
+        'device_id': action.device_id
+    })
+
+
+@app.route('/actions/<int:action_id>', methods=['DELETE'])
+def delete_action(action_id):
+    action = Actions.query.get_or_404(action_id)
+    db.session.delete(action)
+    db.session.commit()
+    return jsonify({'message': 'Action has been deleted successfully!'})
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,32 +1,21 @@
-from flask import Flask, g, request, jsonify
-from database import get_db, connect_db
-import requests
+from flask import Flask, g, jsonify, request, url_for
+# import requests
 
 app = Flask(__name__)
 
-
-def get_current_status():
-    x = requests.get("")
-    if x.status_code == 200:
-        return x.text
-    else:
-        return False
-
-
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
+from database import *
+from models import *
 
 
 @app.route('/')
 def hello_world():
-    return get_current_status()
+    # print(Services.query.all())
+    return "Hello CPS2"
 
 
 @app.route('/rules/', methods=['GET', 'POST'])
 def rules():
-    db = get_db()
+    # db = get_db()
 
     if request.method == 'POST':
         json_data = request.get_json()
@@ -52,7 +41,7 @@ def rules():
 
 @app.route('/rules/<int:rule_id>', methods=['GET', 'PATCH'])
 def get_rule(rule_id):
-    db = get_db()
+    # db = get_db()
 
     if request.method == 'PATCH':
         json_data = request.get_json()
@@ -76,37 +65,35 @@ def get_rule(rule_id):
 
 @app.route('/rules/<int:rule_id>', methods=['DELETE'])
 def delete_rule(rule_id):
-    db = get_db()
+    # db = get_db()
     db.execute('delete from rules where id = ?', [rule_id])
     db.commit()
     return jsonify({'message': 'Rule has been deleted successfully!'})
 
 
-
-@app.route('/services/',methods=['GET','POST'])
+@app.route('/services/', methods=['GET', 'POST'])
 def services():
-    db = get_db()
+    global db
 
     if request.method == 'POST':
         json_data = request.get_json()
-        # name = json_data['conditions']
-        # action = json_data['action']
-        # db.execute('INSERT INTO rules(conditions, action) values (?,?)',
-        #            [conditions, action])
-        # db.commit()
+        name = json_data['name']
+        icon_url = json_data['icon_url']
+        service = Services(name=name, icon_url=icon_url)
+        db.session.add(service)
+        db.session.commit()
 
-    cur = db.execute('select * from services')
-    services = cur.fetchall()
-
+    services = Services.query.all()
     return_values = []
     for service in services:
         return_values.append({
-            'id': service['id'],
-            'name' : service['name'],
-            'icon_url' : service['icon_url']
+            'id': service.id,
+            'name': service.name,
+            'icon_url': url_for('static', filename=service.icon_url)
         })
 
     return jsonify(return_values)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

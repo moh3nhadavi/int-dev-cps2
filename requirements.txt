@@ -1,0 +1,4 @@
+flask
+flask-expects-json
+requests
+Flask-SQLAlchemy

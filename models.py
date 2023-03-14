@@ -1,11 +1,17 @@
 from app import db
-import sqlalchemy as sa
-
 
 class Services(db.Model):
-    id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Text)
-    icon_url = sa.Column(sa.Text)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text, nullable=False)
+    icon_url = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
         return f'<Service {self.name}>'
+
+
+class Devices(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey("services.id"),nullable=False)
+    name = db.Column(db.Text,nullable=False)
+    # request = db.relationship("Request", backref=backref("request", uselist=False))
+    service = db.relationship("Services", backref=db.backref("devices", lazy=True))

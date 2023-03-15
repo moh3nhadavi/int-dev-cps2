@@ -30,3 +30,13 @@ class Actions(db.Model):
     device_id = db.Column(db.Integer, db.ForeignKey("devices.id"), nullable=False)
     name = db.Column(db.Text, nullable=False)
     device = db.relationship("Devices", backref=db.backref("actions", lazy=True))
+
+class Rules(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    action_id = db.Column(db.Integer,db.ForeignKey("actions.id"), nullable=False)
+    condition_id = db.Column(db.Integer,db.ForeignKey("conditions.id"), nullable=False)
+    condition_value = db.Column(db.Text, nullable=False)
+    condition_type_value = db.Column(db.Text)
+    action_value = db.Column(db.Text, nullable=False)
+    condition = db.relationship("Conditions", backref=db.backref("rules", lazy=True))
+    action = db.relationship("Actions", backref=db.backref("rules", lazy=True))

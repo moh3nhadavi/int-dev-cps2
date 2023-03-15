@@ -219,5 +219,83 @@ def delete_action(action_id):
     return jsonify({'message': 'Action has been deleted successfully!'})
 
 
+@app.route('/rules', methods=['GET', 'POST'])
+def rules():
+    if request.method == 'POST':
+        json_data = request.get_json()
+        condition_id = json_data['condition_id']
+        action_id = json_data['action_id']
+        condition_value = json_data['condition_value']
+        action_value = json_data['action_value']
+        condition_type_value = None
+        if "condition_type_value" in json_data:
+            condition_type_value = json_data['condition_type_value']
+
+        condition = Conditions.query.get_or_404(condition_id)
+        action = Actions.query.get_or_404(action_id)
+
+        rule = Rules(condition=condition, action=action, condition_value=condition_value, action_value=action_value,
+                     condition_type_value=condition_type_value)
+
+        db.session.add(rule)
+        db.session.commit()
+
+    rules = Rules.query.all()
+    return_values = []
+    for rule in rules:
+        return_values.append({
+            'id': rule.id,
+            'action_id': rule.action_id,
+            'condition_id': rule.condition_id,
+            'condition_value': rule.condition_value,
+            'action_value': rule.action_value,
+            'condition_type_value': rule.condition_type_value,
+        })
+    return jsonify(return_values)
+
+
+@app.route('/rules/<int:rule_id>', methods=['GET', 'PATCH'])
+def get_rule(rule_id):
+    rule = Rules.query.get_or_404(rule_id)
+    if request.method == 'PATCH':
+        json_data = request.get_json()
+        condition_id = json_data['condition_id']
+        action_id = json_data['action_id']
+        condition_value = json_data['condition_value']
+        action_value = json_data['action_value']
+        condition_type_value = None
+        if "condition_type_value" in json_data:
+            condition_type_value = json_data['condition_type_value']
+
+        condition = Conditions.query.get_or_404(condition_id)
+        action = Actions.query.get_or_404(action_id)
+
+        rule.action_id = action_id
+        rule.condition_id = condition_id
+        rule.condition_value = condition_value
+        rule.condition_type_value = condition_type_value
+        rule.action_value = action_value
+
+        db.session.add(rule)
+        db.session.commit()
+
+    return jsonify({
+        'id': rule.id,
+        'action_id': rule.action_id,
+        'condition_id': rule.condition_id,
+        'condition_value': rule.condition_value,
+        'action_value': rule.action_value,
+        'condition_type_value': rule.condition_type_value,
+    })
+
+
+@app.route('/rules/<int:rule_id>', methods=['DELETE'])
+def delete_rule(rule_id):
+    rule = Rules.query.get_or_404(rule_id)
+    db.session.delete(rule)
+    db.session.commit()
+    return jsonify({'message': 'Rule has been deleted successfully!'})
+
+
 if __name__ == '__main__':
     app.run(debug=True)

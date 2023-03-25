@@ -29,24 +29,29 @@ create table if not exists devices
     id         integer primary key autoincrement,
     service_id integer not null,
     name       text    not null,
+    ip         text    not null,
     foreign key (service_id) references services (id)
 );
 
 create table if not exists conditions
 (
-    id        integer primary key autoincrement,
-    device_id integer not null,
-    name      text    not null,
-    type      text    not null,
-    foreign key (device_id) references devices (id)
+    id           integer primary key autoincrement,
+    service_id   integer not null,
+    name         text    not null,
+    type         text    not null,
+    endpoint     text,
+    request_type text,
+    foreign key (service_id) references services (id)
 );
 
 create table if not exists actions
 (
-    id        integer primary key autoincrement,
-    device_id integer not null,
-    name      text    not null,
-    foreign key (device_id) references devices (id)
+    id           integer primary key autoincrement,
+    service_id   integer not null,
+    name         text    not null,
+    endpoint     text,
+    request_type text,
+    foreign key (service_id) references services (id)
 );
 
 create table if not exists rules
@@ -54,19 +59,10 @@ create table if not exists rules
     id                   integer primary key autoincrement,
     action_id            integer not null,
     condition_id         integer not null,
+    device_id            integer not null,
     condition_value      text    not null,
     condition_type_value text,
-    action_value         text    not null,
     foreign key (action_id) references actions (id),
-    foreign key (condition_id) references conditions (id)
-);
-
-create table if not exists device_endpoints
-(
-    id           integer primary key autoincrement,
-    device_id    integer not null,
-    endpoint     text    not null,
-    type         integer not null,
-    request_type text    not null,
+    foreign key (condition_id) references conditions (id),
     foreign key (device_id) references devices (id)
 );

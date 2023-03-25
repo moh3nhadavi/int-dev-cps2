@@ -1,8 +1,9 @@
 from flask import Flask, g, jsonify, request, url_for
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-from database import *
 from models import *
 
 

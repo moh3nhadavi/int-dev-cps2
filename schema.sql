@@ -59,10 +59,12 @@ create table if not exists rules
     id                   integer primary key autoincrement,
     action_id            integer not null,
     condition_id         integer not null,
-    device_id            integer not null,
+    action_device_id     integer not null,
+    condition_device_id  integer not null,
     condition_value      text    not null,
     condition_type_value text,
     foreign key (action_id) references actions (id),
     foreign key (condition_id) references conditions (id),
-    foreign key (device_id) references devices (id)
+    foreign key (action_device_id) references devices (id),
+    foreign key (condition_device_id) references devices (id)
 );

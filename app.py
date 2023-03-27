@@ -1,5 +1,7 @@
-from flask import Flask, g, jsonify, request, url_for
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+import Services.IoTDevice as IoT
+import Services.Store as Store
 
 app = Flask(__name__)
 CORS(app)
@@ -9,7 +11,9 @@ from models import *
 
 @app.route('/')
 def hello_world():
-    return "Hello CPS2"
+    txt = IoT.get_temperature("http://localhost:8080/api/heater")
+    Store.store_at_desktop(txt)
+    return "Done"
 
 
 @app.route('/services/', methods=['GET', 'POST'])
@@ -269,16 +273,22 @@ def rules():
         condition_id = json_data['condition_id']
         action_id = json_data['action_id']
         condition_value = json_data['condition_value']
-        device_id = json_data['device_id']
+        action_device_id = json_data['action_device_id']
+        condition_device_id = json_data['condition_device_id']
         condition_type_value = None
         if "condition_type_value" in json_data:
             condition_type_value = json_data['condition_type_value']
 
         condition = Conditions.query.get_or_404(condition_id)
         action = Actions.query.get_or_404(action_id)
-        device = Devices.query.get_or_404(device_id)
+        action_device = Devices.query.get_or_404(action_device_id)
+        condition_device = Devices.query.get_or_404(condition_device_id)
 
-        rule = Rules(condition=condition, action=action, device=device, condition_value=condition_value,
+        rule = Rules(condition=condition,
+                     action=action,
+                     action_device_id=action_device_id,
+                     condition_device_id=condition_device_id,
+                     condition_value=condition_value,
                      condition_type_value=condition_type_value)
 
         db.session.add(rule)
@@ -292,8 +302,13 @@ def rules():
             'action': {
                 'id': rule.action.id,
                 'name': rule.action.name,
-                # 'endpoint' : rule.action.endpoint
             },
+            # 'action_device': {
+            #     'name': rule.action_device.name
+            # },
+            # 'condition_device': {
+            #     'name': rule.condition_device.name
+            # },
             'condition': {
                 'id': rule.condition.id,
                 'name': rule.condition.name,
@@ -312,7 +327,8 @@ def get_rule(rule_id):
         json_data = request.get_json()
         condition_id = json_data['condition_id']
         action_id = json_data['action_id']
-        device_id = json_data['device_id']
+        action_device_id = json_data['action_device_id']
+        condition_device_id = json_data['condition_device_id']
         condition_value = json_data['condition_value']
         condition_type_value = None
         if "condition_type_value" in json_data:
@@ -320,11 +336,13 @@ def get_rule(rule_id):
 
         condition = Conditions.query.get_or_404(condition_id)
         action = Actions.query.get_or_404(action_id)
-        device = Devices.query.get_or_404(device_id)
+        action_device = Devices.query.get_or_404(action_device_id)
+        condition_device = Devices.query.get_or_404(condition_device_id)
 
         rule.action_id = action_id
         rule.condition_id = condition_id
-        rule.device_id = device_id
+        rule.action_device_id = action_device_id
+        rule.condition_device_id = condition_device_id
         rule.condition_value = condition_value
         rule.condition_type_value = condition_type_value
 
@@ -336,7 +354,12 @@ def get_rule(rule_id):
         'action': {
             'id': rule.action.id,
             'name': rule.action.name,
-            # 'endpoint' : rule.action.endpoint
+        },
+        'action_device': {
+            'name': rule.action_device.name
+        },
+        'condition_device': {
+            'name': rule.condition_device.name
         },
         'condition': {
             'id': rule.condition.id,

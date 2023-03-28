@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import Services.IoTDevice as IoT
-import Services.Store as Store
+import service_execution as execution
 import threading
 
 app = Flask(__name__)
@@ -12,9 +11,7 @@ from models import *
 
 @app.route('/')
 def hello_world():
-    txt = IoT.get_temperature("http://localhost:8080/api/heater")
-    Store.store_at_desktop(txt)
-    return "Done"
+    return "Hello CPS2!"
 
 
 @app.route('/services/', methods=['GET', 'POST'])
@@ -296,10 +293,14 @@ def rules():
         db.session.commit()
 
         if condition.type == "timing":
-            thread = threading.Thread(target=Store.store_data,
+            thread = threading.Thread(target=execution.store_data,
                                       args=(condition_value, "http://" + action_device.ip + action.endpoint))
             thread.start()
-            # Store.store_data(condition_value, "http://" + action_device.ip + action.endpoint)
+        elif condition.type == "comparison":
+            thread = threading.Thread(target=execution.compare_data,
+                                      args=(condition, condition_device, condition_value, condition_type_value,
+                                            action, action_device))
+            thread.start()
 
     rules = Rules.query.all()
     return_values = []

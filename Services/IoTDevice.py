@@ -1,15 +1,19 @@
 import requests
-
+import json
 
 def get_temperature(url):
     response = requests.get(url)
     if response.status_code == 200:
-        return response.text
+        return json.loads(response.text)
     return None
 
 
-def presence_detect(url):
+def presence_detection(url):
     response = requests.get(url)
     if response.status_code == 200:
-        return response.text
+        json_data = json.loads(response.text)
+        if json_data["connected"] == "1":
+            return True
+        else:
+            return False
     return None

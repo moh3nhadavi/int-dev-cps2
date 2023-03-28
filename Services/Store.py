@@ -1,8 +1,5 @@
 import os
-import time
-import sched, json
 from sys import platform
-import Services.IoTDevice as IoT
 
 
 def store_at_desktop(text):
@@ -20,20 +17,3 @@ def store_at_desktop(text):
     else:
         with open(csv_file_path, 'a') as csv_file:
             csv_file.write('{}\n'.format(text))
-
-
-def schedule(scheduler, time_step, url):
-    # schedule the next call first
-    scheduler.enter(time_step * 10, 1, schedule, (scheduler, time_step, url,))
-    # then do your stuff
-    json_data = IoT.get_temperature(url)
-    if json_data is not None:
-        json_data = json.loads(json_data)
-        # print(json_data)
-        store_at_desktop("{},{}".format(json_data["date"], json_data["temp"]))
-
-
-def store_data(time_step, url):
-    my_scheduler = sched.scheduler(time.time, time.sleep)
-    my_scheduler.enter(time_step * 10, 1, schedule, (my_scheduler, time_step, url))
-    my_scheduler.run()

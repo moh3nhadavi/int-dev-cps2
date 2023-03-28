@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import Services.IoTDevice as IoT
 import Services.Store as Store
+import threading
 
 app = Flask(__name__)
 CORS(app)
@@ -294,6 +295,12 @@ def rules():
         db.session.add(rule)
         db.session.commit()
 
+        if condition.type == "timing":
+            thread = threading.Thread(target=Store.store_data,
+                                      args=(condition_value, "http://" + action_device.ip + action.endpoint))
+            thread.start()
+            # Store.store_data(condition_value, "http://" + action_device.ip + action.endpoint)
+
     rules = Rules.query.all()
     return_values = []
     for rule in rules:
@@ -303,12 +310,6 @@ def rules():
                 'id': rule.action.id,
                 'name': rule.action.name,
             },
-            # 'action_device': {
-            #     'name': rule.action_device.name
-            # },
-            # 'condition_device': {
-            #     'name': rule.condition_device.name
-            # },
             'condition': {
                 'id': rule.condition.id,
                 'name': rule.condition.name,

@@ -12,8 +12,5 @@ def presence_detection(url):
     response = requests.get(url)
     if response.status_code == 200:
         json_data = json.loads(response.text)
-        if json_data["connected"] == "1":
-            return True
-        else:
-            return False
+        return json_data["connected"]
     return None

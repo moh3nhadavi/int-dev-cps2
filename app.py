@@ -297,9 +297,15 @@ def rules():
                                       args=(condition_value, "http://" + action_device.ip + action.endpoint))
             thread.start()
         elif condition.type == "comparison":
+
             thread = threading.Thread(target=execution.compare_data,
-                                      args=(condition, condition_device, condition_value, condition_type_value,
-                                            action, action_device))
+                                      args=(condition, condition_device.ip, condition_value, condition_type_value,
+                                            action, action_device.ip))
+            thread.start()
+        elif condition.type == "boolean":
+            thread = threading.Thread(target=execution.presence_detection,
+                                      args=(condition, condition_device.ip, condition_value,
+                                            action, action_device.ip))
             thread.start()
 
     rules = Rules.query.all()
@@ -356,12 +362,6 @@ def get_rule(rule_id):
         'action': {
             'id': rule.action.id,
             'name': rule.action.name,
-        },
-        'action_device': {
-            'name': rule.action_device.name
-        },
-        'condition_device': {
-            'name': rule.condition_device.name
         },
         'condition': {
             'id': rule.condition.id,

@@ -16,7 +16,7 @@ def store_schedule(scheduler, time_step, url):
 
 def store_data(time_step, url):
     my_scheduler = sched.scheduler(time.time, time.sleep)
-    my_scheduler.enter(time_step * 60, 1, store_schedule, (my_scheduler, time_step, url))
+    my_scheduler.enter(int(time_step) * 60, 1, store_schedule, (my_scheduler, int(time_step), url))
     my_scheduler.run()
 
 
@@ -75,7 +75,6 @@ def presence_schedule(scheduler, condition, condition_device_ip, condition_value
         if response is not None:
             if response == condition_value:
                 do_action(action, action_device_ip)
-
 
     scheduler.enter(30, 1, presence_schedule,
                     (scheduler, condition, condition_device_ip, condition_value,
